@@ -1,0 +1,54 @@
+# BetterCooking Recipes
+#
+# Ingredient/result format:
+#   nexo:<nexo_item_id>:<amount>       — Nexo custom item
+#   <MATERIAL>:<amount>                — Vanilla Minecraft item (e.g. BEEF:1)
+#
+# needle-speed: ticks between each needle step. Lower = harder.
+#   2  = very hard
+#   4  = medium
+#   8  = easy
+#
+# perfect-zone: radius of the green (perfect) zone from center.
+#   1 = 3 slots are perfect (center ± 1)
+#
+# good-zone: additional slots on each side beyond perfect-zone that count as good.
+#   2 = 2 more slots each side are good
+
+grilled_steak:
+  display-name: "Grilled Steak"
+  ingredients:
+    - nexo:raw_beef:1
+    - nexo:salt:1
+  results:
+    perfect: nexo:grilled_steak_perfect:2
+    good: nexo:grilled_steak:1
+    failed: nexo:burnt_steak:1
+  needle-speed: 2
+  perfect-zone: 1
+  good-zone: 1
+
+simple_salad:
+  display-name: "Simple Salad"
+  ingredients:
+    - nexo:lettuce:1
+    - nexo:tomato:1
+  results:
+    perfect: nexo:perfect_salad:2
+    good: nexo:salad:1
+    failed: nexo:wilted_salad:1
+  needle-speed: 8
+  perfect-zone: 2
+  good-zone: 2
+
+roasted_potato:
+  display-name: "Roasted Potato"
+  ingredients:
+    - POTATO:2
+  results:
+    perfect: BAKED_POTATO:3
+    good: BAKED_POTATO:2
+    failed: CHARCOAL:1
+  needle-speed: 5
+  perfect-zone: 1
+  good-zone: 2

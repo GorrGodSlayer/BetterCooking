@@ -1,0 +1,20 @@
+# BetterCooking Configuration
+
+cooking-station:
+  # The Nexo block ID that acts as the cooking station
+  nexo-block-id: "cooking_station"
+
+ui:
+  title: "Cooking Station"
+
+sounds:
+  perfect: ENTITY_EXPERIENCE_ORB_PICKUP
+  good: BLOCK_NOTE_BLOCK_PLING
+  failed: BLOCK_FIRE_EXTINGUISH
+
+messages:
+  perfect: "&aPerfect cook!"
+  good: "&eGood cook!"
+  failed: "&cBurnt! Better luck next time."
+  no-recipe: "&cNo matching recipe."
+  minigame-start: "&7Timing minigame started — click Cook at the right moment!"

@@ -1,0 +1,9 @@
+name: BetterCooking
+version: '${project.version}'
+main: com.bettercooking.BetterCooking
+api-version: '1.21'
+description: Immersive timing-based cooking minigame
+authors:
+  - Aleksandr
+depend:
+  - Nexo
