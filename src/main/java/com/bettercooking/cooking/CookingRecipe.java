@@ -41,9 +41,15 @@ public class CookingRecipe {
     public record RecipeIngredient(String type, String id, int amount) {}
 
     /**
-     * @param type   "nexo" or "vanilla"
-     * @param id     Nexo item ID or vanilla Material name
-     * @param amount output stack size
+     * @param type          "nexo" or "vanilla"
+     * @param id            Nexo item ID or vanilla Material name
+     * @param amount        output stack size
+     * @param displayName   custom display name (colour codes with &), or null to keep the item's own name
+     * @param lore          extra lore lines (colour codes with &), or empty for none
+     * @param effectType    potion effect type name (e.g. "SPEED") granted on eating, or null for none
+     * @param effectAmplifier effect amplifier (0 = level I)
+     * @param effectDuration effect duration in ticks
      */
-    public record RecipeResult(String type, String id, int amount) {}
+    public record RecipeResult(String type, String id, int amount, String displayName, List<String> lore,
+                                String effectType, int effectAmplifier, int effectDuration) {}
 }

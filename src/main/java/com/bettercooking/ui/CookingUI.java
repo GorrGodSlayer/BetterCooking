@@ -2,6 +2,7 @@ package com.bettercooking.ui;
 
 import com.bettercooking.BetterCooking;
 import com.bettercooking.cooking.CookingRecipe;
+import com.bettercooking.managers.StationManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,26 +20,32 @@ import java.util.List;
 
 public class CookingUI {
 
-    // Slot layout (3-row chest, 27 slots):
-    //  [0][1][2][3][4][5][6][7][8]  <- timing bar
-    //  [9][10][11][12][F][15][F][F][F] <- ingredients + recipe display
-    //  [F][F][F][F][22][F][24][F][F] <- cook button + output
+    // Slot layout (double chest, 54 slots, rows numbered 1-6):
+    //  Row 2, middle 5 (slots 11-15): ingredients
+    //  Row 3, middle (slot 22): recipe display
+    //  Row 4 (slots 27-35): timing bar
+    //  Row 6: [F][fuel][gauge][F][cook][out][out][F][F]  (slots 45-53)
 
-    public static final int[] INGREDIENT_SLOTS = {9, 10, 11, 12};
-    public static final int RECIPE_DISPLAY_SLOT = 15;
-    public static final int COOK_BUTTON_SLOT = 22;
-    public static final int OUTPUT_SLOT = 24;
+    public static final int[] INGREDIENT_SLOTS = {11, 12, 13, 14, 15};
+    public static final int RECIPE_DISPLAY_SLOT = 22;
+    public static final int BAR_START = 27;
     public static final int BAR_SIZE = 9;
+    public static final int FUEL_SLOT = 46;
+    public static final int FUEL_GAUGE_SLOT = 47;
+    public static final int COOK_BUTTON_SLOT = 49;
+    public static final int[] OUTPUT_SLOTS = {50, 51};
 
-    public static void open(Player player, Location location, ItemStack[] storedItems, BetterCooking plugin) {
+    private static final int INVENTORY_SIZE = 54;
+
+    public static void open(Player player, Location location, StationManager.StationData data, BetterCooking plugin) {
         StationHolder holder = new StationHolder(location);
-        Inventory inv = Bukkit.createInventory(holder, 27,
+        Inventory inv = Bukkit.createInventory(holder, INVENTORY_SIZE,
                 Component.text("Cooking Station", NamedTextColor.DARK_GRAY));
         holder.setInventory(inv);
 
         // Filler for all slots
         ItemStack filler = createGuiItem(Material.BLACK_STAINED_GLASS_PANE, " ");
-        for (int i = 0; i < 27; i++) {
+        for (int i = 0; i < INVENTORY_SIZE; i++) {
             inv.setItem(i, filler);
         }
 
@@ -46,11 +53,17 @@ public class CookingUI {
 
         // Restore stored ingredients
         for (int i = 0; i < INGREDIENT_SLOTS.length; i++) {
-            ItemStack item = (storedItems != null && i < storedItems.length) ? storedItems[i] : null;
+            ItemStack item = (data.ingredients != null && i < data.ingredients.length) ? data.ingredients[i] : null;
             inv.setItem(INGREDIENT_SLOTS[i], item);
         }
 
-        inv.setItem(OUTPUT_SLOT, null); // clear output slot filler so items can be placed there
+        inv.setItem(FUEL_SLOT, data.fuel);
+        inv.setItem(FUEL_GAUGE_SLOT, buildFuelGauge(data.burns));
+        // Restore uncollected output (null clears the filler)
+        for (int i = 0; i < OUTPUT_SLOTS.length; i++) {
+            ItemStack item = (data.output != null && i < data.output.length) ? data.output[i] : null;
+            inv.setItem(OUTPUT_SLOTS[i], item);
+        }
         inv.setItem(COOK_BUTTON_SLOT, buildCookButton(false));
         inv.setItem(RECIPE_DISPLAY_SLOT, buildNoRecipeItem());
 
@@ -67,16 +80,16 @@ public class CookingUI {
     /** Sets the timing bar to the idle (gray) state. */
     public static void setIdleBar(Inventory inv) {
         for (int i = 0; i < BAR_SIZE; i++) {
-            inv.setItem(i, createGuiItem(Material.GRAY_STAINED_GLASS_PANE, " "));
+            inv.setItem(BAR_START + i, createGuiItem(Material.GRAY_STAINED_GLASS_PANE, " "));
         }
     }
 
     /**
      * Redraws the timing bar with zone colours and the needle at needlePos.
-     * Zone layout (center = slot 4):
-     *   |slot - center| <= perfectZone        → LIME  (perfect)
-     *   |slot - center| <= perfectZone + goodZone → YELLOW (good)
-     *   otherwise                              → RED   (miss)
+     * Zone layout (center = index 4):
+     *   distance == 0                       → LIME   (perfect — dead center only)
+     *   distance <= goodZone                → YELLOW (good)
+     *   otherwise                           → RED    (miss)
      */
     public static void updateBar(Inventory inv, int needlePos, CookingRecipe recipe) {
         int center = BAR_SIZE / 2;
@@ -85,14 +98,14 @@ public class CookingUI {
             ItemStack pane;
             if (i == needlePos) {
                 pane = createGuiItem(Material.WHITE_STAINED_GLASS_PANE, "▼ Click Cook!");
-            } else if (distance <= recipe.getPerfectZone()) {
+            } else if (distance == 0) {
                 pane = createGuiItem(Material.LIME_STAINED_GLASS_PANE, "Perfect!");
-            } else if (distance <= recipe.getPerfectZone() + recipe.getGoodZone()) {
+            } else if (distance <= recipe.getGoodZone()) {
                 pane = createGuiItem(Material.YELLOW_STAINED_GLASS_PANE, "Good");
             } else {
                 pane = createGuiItem(Material.RED_STAINED_GLASS_PANE, "Miss");
             }
-            inv.setItem(i, pane);
+            inv.setItem(BAR_START + i, pane);
         }
     }
 
@@ -126,6 +139,11 @@ public class CookingUI {
         return false;
     }
 
+    public static boolean isOutputSlot(int slot) {
+        for (int s : OUTPUT_SLOTS) if (s == slot) return true;
+        return false;
+    }
+
     public static ItemStack buildCookButton(boolean active) {
         Material mat = active ? Material.LIME_DYE : Material.GRAY_DYE;
         String label = active ? "Cook!" : "Place ingredients first";
@@ -135,6 +153,22 @@ public class CookingUI {
 
     public static ItemStack buildNoRecipeItem() {
         return createGuiItem(Material.BARRIER, "No matching recipe", NamedTextColor.RED);
+    }
+
+    /** Fuel gauge: stored fuel in furnace units — 1 unit cooks 1 ingredient item. */
+    public static ItemStack buildFuelGauge(int burns) {
+        Material mat = burns > 0 ? Material.BLAZE_POWDER : Material.GRAY_DYE;
+        ItemStack item = new ItemStack(mat);
+        ItemMeta meta = item.getItemMeta();
+        meta.displayName(Component.text("Fuel", NamedTextColor.GOLD).decoration(TextDecoration.ITALIC, false));
+        meta.lore(List.of(
+                Component.text("Fuel for " + burns + " item" + (burns == 1 ? "" : "s"), NamedTextColor.GRAY)
+                        .decoration(TextDecoration.ITALIC, false),
+                Component.text("Click with coal to refuel", NamedTextColor.DARK_GRAY)
+                        .decoration(TextDecoration.ITALIC, false)
+        ));
+        item.setItemMeta(meta);
+        return item;
     }
 
     public static ItemStack createGuiItem(Material material, String name) {

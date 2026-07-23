@@ -1,44 +1,53 @@
 # BetterCooking Recipes
 #
-# Ingredient/result format:
+# Ingredient format:
 #   nexo:<nexo_item_id>:<amount>       — Nexo custom item
 #   <MATERIAL>:<amount>                — Vanilla Minecraft item (e.g. BEEF:1)
+#
+# Result format (same as ingredients, plus an optional custom name for vanilla items):
+#   <MATERIAL>:<amount>:<Display Name> — Vanilla item renamed with & colour codes
 #
 # needle-speed: ticks between each needle step. Lower = harder.
 #   2  = very hard
 #   4  = medium
 #   8  = easy
 #
-# perfect-zone: radius of the green (perfect) zone from center.
-#   1 = 3 slots are perfect (center ± 1)
+# perfect-zone: unused — perfect is always the single dead-center slot. Kept
+# here so old recipe files still load; feel free to remove it from your recipes.
 #
-# good-zone: additional slots on each side beyond perfect-zone that count as good.
-#   2 = 2 more slots each side are good
+# good-zone: slots on each side of the center that count as good.
+#   2 = 2 slots each side (beyond the single perfect center) are good
+#
+# Batch cooking: if the slots hold a multiple of the ingredients (e.g. 5 beef
+# for a 1-beef recipe), one cook processes the whole batch and multiplies the
+# result. Fuel is charged per ingredient item, exactly like a furnace.
+#
+# Recipes created with /cooking add are written in a structured result format
+# instead of the compact string above, so they can carry lore and an eat effect:
+#
+#   results:
+#     perfect:
+#       item: "COOKED_BEEF:1"        # or "nexo:<id>:<amount>"
+#       name: "&6&lHeavenly Steak"   # optional
+#       lore:                         # optional
+#         - "&7A perfectly cooked steak"
+#       effect:                       # optional — granted when the item is eaten
+#         type: SPEED                 # e.g. SPEED, STRENGTH, REGENERATION, HASTE
+#         amplifier: 0                # 0 = level I
+#         duration: 200                # ticks (20 = 1 second)
+#
+# Both formats can be mixed freely between qualities/recipes in this same file.
 
-grilled_steak:
-  display-name: "Grilled Steak"
+steak:
+  display-name: "Steak"
   ingredients:
-    - nexo:raw_beef:1
-    - nexo:salt:1
+    - BEEF:1
   results:
-    perfect: nexo:grilled_steak_perfect:2
-    good: nexo:grilled_steak:1
-    failed: nexo:burnt_steak:1
-  needle-speed: 2
+    perfect: "COOKED_BEEF:1:&6&lHeavenly Steak"
+    good: "COOKED_BEEF:1:&eSteak"
+    failed: "COOKED_BEEF:1:&8Burnt Steak"
+  needle-speed: 3
   perfect-zone: 1
-  good-zone: 1
-
-simple_salad:
-  display-name: "Simple Salad"
-  ingredients:
-    - nexo:lettuce:1
-    - nexo:tomato:1
-  results:
-    perfect: nexo:perfect_salad:2
-    good: nexo:salad:1
-    failed: nexo:wilted_salad:1
-  needle-speed: 8
-  perfect-zone: 2
   good-zone: 2
 
 roasted_potato:
@@ -48,7 +57,21 @@ roasted_potato:
   results:
     perfect: BAKED_POTATO:3
     good: BAKED_POTATO:2
-    failed: CHARCOAL:1
+    failed: "CHARCOAL:1:&8Charred Potato"
   needle-speed: 5
   perfect-zone: 1
   good-zone: 2
+
+# --- Nexo example (needs matching Nexo items configured) ---
+# grilled_steak:
+#   display-name: "Grilled Steak"
+#   ingredients:
+#     - nexo:raw_beef:1
+#     - nexo:salt:1
+#   results:
+#     perfect: nexo:grilled_steak_perfect:2
+#     good: nexo:grilled_steak:1
+#     failed: nexo:burnt_steak:1
+#   needle-speed: 2
+#   perfect-zone: 1
+#   good-zone: 1

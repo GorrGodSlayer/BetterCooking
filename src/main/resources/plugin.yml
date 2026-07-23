@@ -5,5 +5,17 @@ api-version: '1.21'
 description: Immersive timing-based cooking minigame
 authors:
   - Aleksandr
-depend:
+# Nexo is only needed when using nexo: blocks/items; vanilla mode works without it
+softdepend:
   - Nexo
+
+commands:
+  cooking:
+    description: Create and edit BetterCooking recipes in-game.
+    usage: /<command> add <recipe-id> | /<command> change <recipe-id> | /<command> cancel
+    permission: bettercooking.admin
+
+permissions:
+  bettercooking.admin:
+    description: Allows creating and editing BetterCooking recipes with /cooking add.
+    default: op

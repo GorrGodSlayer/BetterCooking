@@ -1,11 +1,30 @@
 # BetterCooking Configuration
 
+# Logs every click in the cooking GUI to the console — enable when troubleshooting
+debug: false
+
 cooking-station:
-  # The Nexo block ID that acts as the cooking station
-  nexo-block-id: "cooking_station"
+  # The block that acts as the cooking station.
+  #   Vanilla block:  "<MATERIAL>"        e.g. "SMOKER"
+  #   Nexo block:     "nexo:<block_id>"   e.g. "nexo:cooking_station"
+  #
+  # A pressure plate of any kind must be placed on top of this block for it to
+  # open the cooking GUI. Without one, the block behaves exactly like vanilla
+  # (e.g. a plain Smoker with nothing on top still smelts normally).
+  block-id: "SMOKER"
 
 ui:
   title: "Cooking Station"
+
+fuel:
+  # Material name -> number of items one fuel item can cook.
+  # Values match vanilla furnace smelting (coal smelts 8 items, etc.).
+  # Each ingredient item consumed by a cook costs 1 unit.
+  items:
+    COAL: 8
+    CHARCOAL: 8
+    COAL_BLOCK: 80
+    BLAZE_ROD: 12
 
 sounds:
   perfect: ENTITY_EXPERIENCE_ORB_PICKUP
@@ -17,4 +36,7 @@ messages:
   good: "&eGood cook!"
   failed: "&cBurnt! Better luck next time."
   no-recipe: "&cNo matching recipe."
+  no-fuel: "&cOut of fuel! Add coal to the fuel slot."
+  low-fuel: "&eLow fuel — only cooking part of the batch."
+  station-busy: "&cSomeone else is using this station."
   minigame-start: "&7Timing minigame started — click Cook at the right moment!"
